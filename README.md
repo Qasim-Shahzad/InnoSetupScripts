@@ -159,7 +159,7 @@ After the installation check your Evironment Variable in Delphi IDE and Search P
 
   License [MIT-License](https://github.com/skia4delphi/skia4delphi?tab=MIT-1-ov-file)
 
-## The original author of the Scripts are: Skia4Delphi Library by [the autohors](https://skia4delphi.org/)
+## The original author of the Scripts are: Skia4Delphi Library by [the authors](https://skia4delphi.org/)
 
   License [MIT-License](https://github.com/skia4delphi/skia4delphi?tab=MIT-1-ov-file)
 
