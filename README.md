@@ -105,7 +105,7 @@ This is an example of the "Build Groups Panel":
 
 Check in your .dproj xml file, if contains the correct "ProjectVersion" number, because the scripts use it to known the correct Delphi Version.
 
-for Example, for Delphi 12.2 Package must be 20.2:
+for Example, for Delphi 12.2 ProjectVersion must be 20.2:
 
 ```xml
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
@@ -127,9 +127,9 @@ Use this table for the correct "ProjectVersion" of every Delphi versions:
 | RAD Studio 10.1 Berlin   | 18.1\*             | 18.2\*             | 240            |
 | RAD Studio 10.2 Tokyo    | 18.2\*             | 18.4               | 250            |
 | RAD Studio 10.3 Rio      | 18.5               | 18.8               | 260            |
-| RAD Studio 10.4 Sydney   | 19.0               | 19.2               | 270 or {$Auto} |
-| RAD Studio 11 Alexandria | 19.3               | 19.5               | 280 or {$Auto} |
-| RAD Studio 12 Athens     | 20.1               | 20.2               | 290 or {$Auto} |
+| RAD Studio 10.4 Sydney   | 19.0               | 19.2               | 270 or $(Auto) |
+| RAD Studio 11 Alexandria | 19.3               | 19.5               | 280 or $(Auto) |
+| RAD Studio 12 Athens     | 20.1               | 20.2               | 290 or $(Auto) |
 
 \*In case of conflict the script searches for Package Version\*\* (LibSuffix), so it is recommended to use "standard" Lib Suffix values.
 
