@@ -6,9 +6,9 @@
 {                                                                        }
 { InnoSetup Tools Library for Delphi Components                          }
 {                                                                        }
-{ Copyright (c) 2024 Ethea S.r.l.                                        }
+{ Copyright (c) 2024-2025 Ethea S.r.l.                                   }
 {                                                                        }
-{ Original Code is Copyright (c) 2021-2024 Skia4Delphi Project.          }
+{ Original Code is Copyright (c) 2021-2025 Skia4Delphi Project.          }
 {                                                                        }
 { Use of this source code is governed by the MIT license that can be     }
 { found in the LICENSE file.                                             }
@@ -95,8 +95,10 @@ function TryGetRADStudioRSVarsBatchFileName(const ARADStudioInfo: TRADStudioInfo
 function TryGetRADStudioVersionByRegVersion(const ARegVersion: string; out ARADStudioVersion: TRADStudioVersion): Boolean; forward;
 /// <summary> Try to get the RAD Studio version of a project </summary>
 function TryGetRADStudioVersionOfProject(const AProject: TRADStudioProject; out ARADStudioVersion: TRADStudioVersion): Boolean; forward;
+/// <summary> Calculate Registry Node Name for KnownPackages</summary>
+function GetKnownPackagesNodeName(const APlatform: TProjectPlatform): string; forward;
 /// <summary> Try to register a Bpl in RAD Studio </summary>
-function TryRegisterRADStudioBpl(const ARADStudioVersion: TRADStudioVersion; const ABplFileName, ADescription: string): Boolean; forward;
+function TryRegisterRADStudioBpl(const ARADStudioVersion: TRADStudioVersion; const APlatform: TProjectPlatform; const ABplFileName, ADescription: string): Boolean; forward;
 /// <summary> Try to remove a library instaled using the GetIt </summary>
 function TryRemoveFromGetIt(const AInfos: TRADStudioInfos; const ALibraryName: string): Boolean; forward;
 /// <summary> Try to remove an environment variable exclusive of RAD Studio application </summary>
@@ -110,7 +112,7 @@ function TryRemoveRADStudioLibrarySearchPath(const ARADStudioVersion: TRADStudio
 /// <summary> Try to remove a path to the PATH environment variable exclusive of RAD Studio application </summary>
 function TryRemoveRADStudioPathEnvVariable(const ARADStudioVersion: TRADStudioVersion; const APath: string): Boolean; forward;
 /// <summary> Try to unregister a Bpl in RAD Studio </summary>
-function TryUnregisterRADStudioBpl(const ARADStudioVersion: TRADStudioVersion; const ABplFileName: string): Boolean; forward;
+function TryUnregisterRADStudioBpl(const ARADStudioVersion: TRADStudioVersion; const APlatform: TProjectPlatform; const ABplFileName: string): Boolean; forward;
 
 // implementation
 
@@ -496,7 +498,7 @@ begin
   _FRADStudioVersions[GetArrayLength(_FRADStudioVersions) - 1] := LRADStudioVersion;
 
   // RAD Studio 10.0 Seattle
-  LRADStudioVersion.Name := 'RAD Studio 10.0 Seattle';
+  LRADStudioVersion.Name := 'RAD Studio 10 Seattle';
   LRADStudioVersion.RegVersion := '17.0';
   LRADStudioVersion.SupportedPlatformsDelphi := [pfWin32, pfWin64, pfAndroid, pfiOSDevice32, pfiOSDevice64, pfiOSSimulator, pfOSX32];
   LRADStudioVersion.SupportedPlatforms := LRADStudioVersion.SupportedPlatformsDelphi;
@@ -602,7 +604,7 @@ begin
   LRADStudioVersion.RegVersion := '23.0';
   LRADStudioVersion.SupportedPlatformsDelphi := [pfWin32, pfWin64, pfAndroid, pfAndroid64, pfiOSDevice64, pfiOSSimARM64, pfiOSSimulator, pfOSX64, pfOSXARM64, pfLinux64];
   LRADStudioVersion.SupportedPlatforms := LRADStudioVersion.SupportedPlatformsDelphi;
-  LRADStudioVersion.MaxDprojVersion := '20.2';
+  LRADStudioVersion.MaxDprojVersion := '20.3';
   LRADStudioVersion.MinDprojVersion := '20.1';
   LRADStudioVersion.PackageVersion := '290';
   LRADStudioVersion.OldLibSuffix := 'D12';  
@@ -951,10 +953,21 @@ begin
     Log(Format('RADStudio.TryGetRADStudioVersionOfProject: Failed to get the RAD Studio version of the project "%s" with project version "%s".', [AProject.FileName, AProject.ProjectVersion]));
 end;
 
-function TryRegisterRADStudioBpl(const ARADStudioVersion: TRADStudioVersion; const ABplFileName, ADescription: string): Boolean;
+function GetKnownPackagesNodeName(const APlatform: TProjectPlatform): String;
 begin
-  Result := TryUnregisterRADStudioBpl(ARADStudioVersion, ABplFileName) and
-    RegWriteStringValue(HKEY_CURRENT_USER, GetRADStudioRegKey(ARADStudioVersion) + '\Known Packages', ABplFileName, ADescription);
+  if APlatform = pfWin64 then
+    Result := '\Known Packages x64'
+  else 
+    Result := '\Known Packages';
+end;
+
+function TryRegisterRADStudioBpl(const ARADStudioVersion: TRADStudioVersion; const APlatform: TProjectPlatform; const ABplFileName, ADescription: string): Boolean;
+var
+  LNode: string;
+begin
+  LNode := GetKnownPackagesNodeName(APlatform);
+  Result := TryUnregisterRADStudioBpl(ARADStudioVersion, APlatform, ABplFileName) and
+    RegWriteStringValue(HKEY_CURRENT_USER, GetRADStudioRegKey(ARADStudioVersion) + LNode, ABplFileName, ADescription);
   if not Result then
     Log(Format('RADStudio.TryRegisterRADStudioBpl: Failed to register the RAD Studio bpl "%s".', [ABplFileName]));
 end;
@@ -1111,13 +1124,16 @@ begin
   end;
 end;
 
-function TryUnregisterRADStudioBpl(const ARADStudioVersion: TRADStudioVersion; const ABplFileName: string): Boolean;
+function TryUnregisterRADStudioBpl(const ARADStudioVersion: TRADStudioVersion; const APlatform: TProjectPlatform; const ABplFileName: string): Boolean;
 var
   LRegisteredBpls: TArrayOfString;
   LBplName: string;
   I: Integer;
+var
+  LNode: string;
 begin
-  Result := RegGetValueNames(HKEY_CURRENT_USER, GetRADStudioRegKey(ARADStudioVersion) + '\Known Packages', LRegisteredBpls);
+  LNode := GetKnownPackagesNodeName(APlatform);
+  Result := RegGetValueNames(HKEY_CURRENT_USER, GetRADStudioRegKey(ARADStudioVersion) + LNode, LRegisteredBpls);
   if Result then
   begin
     LBplName := ExtractFileName(ABplFileName);
@@ -1125,16 +1141,16 @@ begin
     begin
       if SameText(LBplName, ExtractFileName(LRegisteredBpls[I])) then
       begin
-        if not RegDeleteValue(HKEY_CURRENT_USER, GetRADStudioRegKey(ARADStudioVersion) + '\Known Packages', LRegisteredBpls[I]) then
+        if not RegDeleteValue(HKEY_CURRENT_USER, GetRADStudioRegKey(ARADStudioVersion) + LNode, LRegisteredBpls[I]) then
         begin
           Result := False;
-          Log(Format('RADStudio.TryUnregisterRADStudioBpl: Failed to unregister the bpl "%s". Cannot possible to delete the value "%s" from registry "%s"', [ABplFileName, LRegisteredBpls[I], 'HKEY_CURRENT_USER' + GetRADStudioRegKey(ARADStudioVersion) + '\Known Packages']));
+          Log(Format('RADStudio.TryUnregisterRADStudioBpl: Failed to unregister the bpl "%s". Cannot delete the value "%s" from registry "%s"', [ABplFileName, LRegisteredBpls[I], 'HKEY_CURRENT_USER' + GetRADStudioRegKey(ARADStudioVersion) + LNode]));
         end;
       end;  
     end;
   end
   else
-    Log(Format('RADStudio.TryUnregisterRADStudioBpl: Failed to unregister the bpl "%s". Cannot possible to get the list of Known Packages from registry "%s"', [ABplFileName, 'HKEY_CURRENT_USER' + GetRADStudioRegKey(ARADStudioVersion) + '\Known Packages']));
+    Log(Format('RADStudio.TryUnregisterRADStudioBpl: Failed to unregister the bpl "%s". Cannot possible to get the list of Known Packages from registry "%s"', [ABplFileName, 'HKEY_CURRENT_USER' + GetRADStudioRegKey(ARADStudioVersion) + LNode]));
   Result := _TryRemoveRADStudioBplFromDisabledPackages(ARADStudioVersion, ABplFileName) and Result;
 end;
 

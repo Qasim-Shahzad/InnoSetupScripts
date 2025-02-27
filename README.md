@@ -1,13 +1,13 @@
-﻿# InnoSetup Builder Scripts for Embarcadero RAD Studio<sup>©</sup>
+﻿# InnoSetup Scripts for Embarcadero RAD Studio<sup>©</sup> Components Installer
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ## A collection of InnoSetup Scripts to build a RAD Studio Setup for Delphi Packages of Components and Libraries of any types.
 
-### Actual official version 1.0.0
+### Actual official version 1.1.0
 
 Copyright <sup>©</sup> 2024-2025 Ethea S.r.l.
-Original Code is Copyright <sup>©</sup> 2021-2024 Skia4Delphi Project.
+Original Code is Copyright <sup>©</sup> 2021-2025 Skia4Delphi Project.
 Use of this source code is governed by the MIT license.
 
 ## Scope of this Scripts collection
@@ -105,7 +105,7 @@ This is an example of the "Build Groups Panel":
 
 Check in your .dproj xml file, if contains the correct "ProjectVersion" number, because the scripts use it to known the correct Delphi Version.
 
-for Example, for Delphi 12.2 ProjectVersion must be 20.2:
+for Example, for Delphi 12.3 ProjectVersion must be 20.3:
 
 ```xml
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
@@ -129,7 +129,7 @@ Use this table for the correct "ProjectVersion" of every Delphi versions:
 | RAD Studio 10.3 Rio      | 18.5               | 18.8               | 260            |
 | RAD Studio 10.4 Sydney   | 19.0               | 19.2               | 270 or $(Auto) |
 | RAD Studio 11 Alexandria | 19.3               | 19.5               | 280 or $(Auto) |
-| RAD Studio 12 Athens     | 20.1               | 20.2               | 290 or $(Auto) |
+| RAD Studio 12 Athens     | 20.1               | 20.3               | 290 or $(Auto) |
 
 \*In case of conflict the script searches for Package Version\*\* (LibSuffix), so it is recommended to use "standard" Lib Suffix values.
 
@@ -163,5 +163,13 @@ After the installation check your Evironment Variable in Delphi IDE and Search P
 
   License [MIT-License](https://github.com/skia4delphi/skia4delphi?tab=MIT-1-ov-file)
 
+### RELEASE NOTES
+27 Feb 2025: version 1.1.0
+- Added support to build design-time 64bit Packages for Delphi 12.3
+- Added support for Delphi 12.3
 
+2 Jan 2025: version 1.0.0
+- Added support for bpl packages built in RAD Studio Common Bpl Folders
+- Added various Styles form customization of Setup
+- Added Italian language translation
 
